@@ -1,0 +1,192 @@
+  <!doctype html>
+    <html>
+    <head>
+        <title>Strongholds & Trap Game</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                max-width: 900px;
+                margin: 20px auto;
+                padding: 20px;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            }
+            .header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+            }
+            .title {
+                font-size: 24px;
+                font-weight: bold;
+            }
+            .scoreboard {
+                text-align: right;
+            }
+            .scoreboard div {
+                margin: 4px 0;
+            }
+            .board {
+                margin-top: 20px;
+                display: flex;
+                justify-content: center;
+            }
+            table.grid {
+                border-collapse: collapse;
+            }
+            table.grid td {
+                padding: 0;
+            }
+            .cell-button {
+                width: 40px;
+                height: 40px;
+                border: 1px solid #ccc;
+                cursor: pointer;
+                font-size: 0;
+            }
+            .cell-button:disabled {
+                cursor: default;
+            }
+            .status {
+                margin-top: 20px;
+                text-align: center;
+                font-size: 18px;
+                font-weight: bold;
+            }
+            .controls {
+                margin-top: 15px;
+                text-align: center;
+            }
+            .controls button {
+                padding: 8px 16px;
+                font-size: 14px;
+                border-radius: 4px;
+                border: none;
+                cursor: pointer;
+            }
+            .reset-button {
+                background-color: #007bff;
+                color: white;
+            }
+            .legend {
+                margin-top: 20px;
+                font-size: 14px;
+            }
+            .legend-item {
+                display: inline-flex;
+                align-items: center;
+                margin-right: 15px;
+                margin-bottom: 5px;
+            }
+            .legend-color {
+                width: 16px;
+                height: 16px;
+                border: 1px solid #666;
+                margin-right: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <div class="title">Strongholds & Trap</div>
+                <div class="scoreboard">
+                    <div><strong>Score:</strong> {{ score }}</div>
+                    <div><strong>Attacks Left:</strong> {{ remaining }}</div>
+                    <div><strong>Target Score:</strong> {{ target_score }}</div>
+                    <div><strong>Max Attacks:</strong> {{ max_guesses }}</div>
+                </div>
+            </div>
+
+            <div class="board">
+                <form method="post" action="{{ url_for('click') }}">
+                    <table class="grid">
+                        {% for r in range(board_size) %}
+                        <tr>
+                            {% for c in range(board_size) %}
+                                {% set key = r|string + ',' + c|string %}
+                                {% set is_revealed = key in revealed %}
+                                {% set tile_type = board[r][c] %}
+                                {% if not is_revealed %}
+                                    {% set color = 'white' %}
+                                {% else %}
+                                    {% if tile_type == 'H' %}
+                                        {% set color = 'lightgreen' %}
+                                    {% elif tile_type == 'F' %}
+                                        {% set color = 'khaki' %}
+                                    {% elif tile_type == 'S' %}
+                                        {% set color = 'orange' %}
+                                    {% elif tile_type == 'T' %}
+                                        {% set color = 'black' %}
+                                    {% else %}
+                                        {% set color = 'lightgray' %}
+                                    {% endif %}
+                                {% endif %}
+                                <td>
+                                    <button
+                                        class="cell-button"
+                                        type="submit"
+                                        name="cell"
+                                        value="{{ r }},{{ c }}"
+                                        style="background-color: {{ color }};"
+                                        {% if game_over or is_revealed %}disabled{% endif %}
+                                    >
+                                        &nbsp;
+                                    </button>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </form>
+            </div>
+
+            <div class="status">
+                {% if game_over %}
+                    {% if result == 'win' %}
+                        🎉 You Win! 🎉
+                    {% else %}
+                        💣 You Lose! 💣
+                    {% endif %}
+                {% else %}
+                    Click a tile to attack!
+                {% endif %}
+            </div>
+
+            <div class="controls">
+                <form method="post" action="{{ url_for('reset') }}">
+                    <button class="reset-button" type="submit">
+                        Start New Game
+                    </button>
+                </form>
+            </div>
+
+            <div class="legend">
+                <div><strong>Legend (colors after clicking):</strong></div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: lightgreen;"></div> Home Base (45 pts, auto win)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: khaki;"></div> Fence (3 pts)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: orange;"></div> Stronghold (12 pts)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: black;"></div> Trap (0 pts, instant loss)
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: lightgray;"></div> Land (0 pts)
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    

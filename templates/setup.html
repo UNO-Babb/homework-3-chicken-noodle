@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Player {{ player }} – Board Setup</h2>
+
+<p>{{ message }}</p>
+<p>Click a tile to assign it.</p>
+
+<div class="board">
+  {% for r in numbers %}
+  <div class="row">
+    {% for c in letters %}
+      {% set tile = c ~ r %}
+      {% set cell = board.tiles[tile] %}
+      {% set klass = cell.class %}
+      <a class="cell {{ klass }}"
+         href="{{ url_for('setup_click', tile=tile) }}">
+        {{ tile }}
+      </a>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+
+<p>
+  Rules:
+  <ul>
+    <li>Home Base cannot be on the perimeter.</li>
+    <li>Strongholds & Trap cannot be adjacent to Home (no placement on Fence tiles).</li>
+  </ul>
+</p>
+
+{% endblock %}
